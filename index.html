@@ -1385,6 +1385,313 @@
                 </div>
             </div>
 
+            <!-- Task Automation Section -->
+            <div x-show="activeSection === 'automation'" class="space-y-8">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold mb-4">🔧 Manual Task Automation Solutions</h2>
+                    <p class="text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+                        Select your manual tasks to discover automation solutions using Power Platform, Azure DevOps, SharePoint, Task Mining, and Microsoft 365.
+                    </p>
+                </div>
+
+                <!-- Task Selection Filters -->
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
+                    <h3 class="text-lg font-semibold mb-4">Filter Tasks by Department</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                        <template x-for="(department, key) in automationDepartments" :key="key">
+                            <button @click="automationFilters.department = automationFilters.department === key ? '' : key"
+                                    :class="automationFilters.department === key ? 'bg-gradient-primary text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'"
+                                    class="p-3 rounded-lg text-center transition-colors">
+                                <div class="text-2xl mb-1" x-text="department.icon"></div>
+                                <div class="text-xs font-medium" x-text="department.name"></div>
+                            </button>
+                        </template>
+                    </div>
+                    
+                    <!-- Selected Tasks Counter -->
+                    <div class="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-medium">Selected Tasks: <span x-text="selectedTasks.length" class="font-bold text-blue-600"></span></span>
+                            <div class="space-x-2">
+                                <button @click="selectedTasks = []" class="px-3 py-1 bg-gray-500 text-white rounded text-sm hover:bg-gray-600">
+                                    Clear All
+                                </button>
+                                <button @click="selectAllVisibleTasks()" class="px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600">
+                                    Select All Visible
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Task Selection Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <template x-for="(taskList, department) in getFilteredAutomationTasks()" :key="department">
+                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
+                            <div class="p-6 border-b border-gray-200 dark:border-gray-700" :style="'background: linear-gradient(135deg, ' + automationDepartments[department].color + '20, ' + automationDepartments[department].color + '10)'">
+                                <div class="flex items-center">
+                                    <span class="text-3xl mr-3" x-text="automationDepartments[department].icon"></span>
+                                    <div>
+                                        <h3 class="text-xl font-bold" x-text="automationDepartments[department].name"></h3>
+                                        <p class="text-gray-600 dark:text-gray-400" x-text="automationDepartments[department].description"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <div class="space-y-3">
+                                    <template x-for="task in taskList" :key="task.id">
+                                        <label class="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors">
+                                            <input type="checkbox" 
+                                                   :value="task.id" 
+                                                   x-model="selectedTasks" 
+                                                   class="mt-1 rounded">
+                                            <div class="flex-1">
+                                                <h4 class="font-medium text-sm" x-text="task.manual"></h4>
+                                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1" x-text="task.automated"></p>
+                                                <div class="flex flex-wrap gap-1 mt-2">
+                                                    <template x-for="tool in task.tools" :key="tool">
+                                                        <span class="px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-200 text-xs rounded" x-text="tool"></span>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Automation Solutions for Selected Tasks -->
+                <div x-show="selectedTasks.length > 0" class="space-y-8">
+                    <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-8 rounded-xl">
+                        <h3 class="text-2xl font-bold mb-6 text-center">🚀 Your Custom Automation Solutions</h3>
+                        
+                        <!-- Solution Summary -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                            <div class="text-center">
+                                <div class="text-3xl font-bold text-green-600 mb-2" x-text="selectedTasks.length"></div>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Tasks Selected</p>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-3xl font-bold text-green-600 mb-2" x-text="getUniqueTools().length"></div>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Tools Recommended</p>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-3xl font-bold text-green-600 mb-2" x-text="Math.round(selectedTasks.length * 15) + '%'"></div>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Estimated Time Savings</p>
+                            </div>
+                        </div>
+
+                        <!-- Recommended Tools Overview -->
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg mb-6">
+                            <h4 class="text-lg font-semibold mb-4">🛠️ Recommended Tools for Your Selection</h4>
+                            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                                <template x-for="tool in getUniqueTools()" :key="tool">
+                                    <div class="flex items-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                                        <span x-text="getToolIcon(tool)" class="text-lg mr-2"></span>
+                                        <span class="text-sm font-medium" x-text="tool"></span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Solutions -->
+                    <div class="space-y-6">
+                        <h3 class="text-2xl font-bold text-center mb-6">📋 Detailed Automation Solutions</h3>
+                        <template x-for="taskId in selectedTasks" :key="taskId">
+                            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                                <div class="p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800">
+                                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                        <div>
+                                            <h4 class="font-semibold text-red-600 mb-2">❌ Manual Process</h4>
+                                            <p class="text-sm" x-text="getTaskById(taskId)?.manual"></p>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-semibold text-green-600 mb-2">✅ Automated Solution</h4>
+                                            <p class="text-sm" x-text="getTaskById(taskId)?.automated"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="p-6">
+                                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                        <div>
+                                            <h5 class="font-semibold mb-3">🛠️ Required Tools</h5>
+                                            <div class="space-y-2">
+                                                <template x-for="tool in getTaskById(taskId)?.tools || []" :key="tool">
+                                                    <div class="flex items-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded">
+                                                        <span x-text="getToolIcon(tool)" class="text-lg mr-3"></span>
+                                                        <div>
+                                                            <span class="font-medium text-sm" x-text="tool"></span>
+                                                            <p class="text-xs text-gray-500" x-text="getToolDescription(tool)"></p>
+                                                        </div>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <h5 class="font-semibold mb-3">💡 Implementation Benefits</h5>
+                                            <div class="space-y-2">
+                                                <template x-for="benefit in getTaskById(taskId)?.benefits || []" :key="benefit">
+                                                    <div class="flex items-start space-x-2">
+                                                        <span class="text-green-500 mt-1">•</span>
+                                                        <span class="text-sm" x-text="benefit"></span>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Implementation Steps -->
+                                    <div class="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                        <h5 class="font-semibold mb-3">🚀 Quick Implementation Guide</h5>
+                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                            <template x-for="(step, index) in getTaskById(taskId)?.steps || []" :key="index">
+                                                <div class="flex items-start space-x-2">
+                                                    <div class="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold" x-text="index + 1"></div>
+                                                    <span class="text-sm" x-text="step"></span>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Implementation Roadmap -->
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
+                        <h3 class="text-2xl font-bold mb-6 text-center">🗺️ Project Management Implementation Roadmap</h3>
+                        
+                        <!-- Project Phases -->
+                        <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 mb-8">
+                            <template x-for="(phase, key) in getProjectManagementPhases()" :key="key">
+                                <div class="text-center">
+                                    <div class="w-16 h-16 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                                        <span class="text-2xl" x-text="phase.icon"></span>
+                                    </div>
+                                    <h4 class="font-bold mb-2" x-text="phase.name"></h4>
+                                    <div class="text-2xl font-bold text-blue-600 mb-2" x-text="phase.hours + 'h'"></div>
+                                    <p class="text-xs text-gray-600 dark:text-gray-400 mb-3">Capacity Hours Required</p>
+                                    <div class="space-y-1">
+                                        <template x-for="activity in phase.activities.slice(0, 3)" :key="activity">
+                                            <div class="text-xs bg-gray-50 dark:bg-gray-700 p-2 rounded" x-text="activity"></div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+
+                        <!-- Enhanced Project Management Features -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                            <div class="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-6 rounded-lg">
+                                <h4 class="text-lg font-semibold mb-4 text-green-800 dark:text-green-300">🧪 Testing & Quality Assurance</h4>
+                                <div class="space-y-3">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm">Testing Hours</span>
+                                        <span class="font-bold text-green-600" x-text="calculateImplementationCost().testingHours + 'h'"></span>
+                                    </div>
+                                    <div class="text-xs space-y-2">
+                                        <div class="flex items-center space-x-2">
+                                            <span class="w-2 h-2 bg-green-400 rounded-full"></span>
+                                            <span>Automated unit testing for Power Automate flows</span>
+                                        </div>
+                                        <div class="flex items-center space-x-2">
+                                            <span class="w-2 h-2 bg-green-400 rounded-full"></span>
+                                            <span>User acceptance testing (UAT) coordination</span>
+                                        </div>
+                                        <div class="flex items-center space-x-2">
+                                            <span class="w-2 h-2 bg-green-400 rounded-full"></span>
+                                            <span>Performance testing with realistic data volumes</span>
+                                        </div>
+                                        <div class="flex items-center space-x-2">
+                                            <span class="w-2 h-2 bg-green-400 rounded-full"></span>
+                                            <span>Security and compliance validation</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 p-6 rounded-lg">
+                                <h4 class="text-lg font-semibold mb-4 text-purple-800 dark:text-purple-300">🚀 Innovation & Optimization</h4>
+                                <div class="space-y-3">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm">Innovation Hours</span>
+                                        <span class="font-bold text-purple-600" x-text="calculateImplementationCost().innovationHours + 'h'"></span>
+                                    </div>
+                                    <div class="text-xs space-y-2">
+                                        <div class="flex items-center space-x-2">
+                                            <span class="w-2 h-2 bg-purple-400 rounded-full"></span>
+                                            <span>AI Builder model optimization and training</span>
+                                        </div>
+                                        <div class="flex items-center space-x-2">
+                                            <span class="w-2 h-2 bg-purple-400 rounded-full"></span>
+                                            <span>Advanced Power BI analytics and insights</span>
+                                        </div>
+                                        <div class="flex items-center space-x-2">
+                                            <span class="w-2 h-2 bg-purple-400 rounded-full"></span>
+                                            <span>Process mining implementation for continuous improvement</span>
+                                        </div>
+                                        <div class="flex items-center space-x-2">
+                                            <span class="w-2 h-2 bg-purple-400 rounded-full"></span>
+                                            <span>Copilot Studio chatbot enhancement</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Detailed License Requirements -->
+                        <div class="mt-8 p-6 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg">
+                            <h4 class="text-lg font-semibold mb-4 text-center">💰 Monthly License Requirements</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <h5 class="font-semibold mb-3">Required Licenses</h5>
+                                    <div class="space-y-2">
+                                        <template x-for="license in calculateImplementationCost().licenseBreakdown" :key="license.tool">
+                                            <div class="flex justify-between items-center p-2 bg-white dark:bg-gray-700 rounded">
+                                                <div>
+                                                    <span class="font-medium text-sm" x-text="license.tool"></span>
+                                                    <p class="text-xs text-gray-500" x-text="license.description"></p>
+                                                </div>
+                                                <span class="font-bold text-blue-600" x-text="'$' + license.cost"></span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h5 class="font-semibold mb-3">Project Summary</h5>
+                                    <div class="space-y-3">
+                                        <div class="flex justify-between items-center">
+                                            <span>Monthly Licensing Total</span>
+                                            <span class="text-2xl font-bold text-blue-600" x-text="'$' + calculateImplementationCost().monthly.toLocaleString()"></span>
+                                        </div>
+                                        <div class="flex justify-between items-center">
+                                            <span>Total Project Hours</span>
+                                            <span class="text-2xl font-bold text-green-600" x-text="calculateImplementationCost().totalProjectHours + 'h'"></span>
+                                        </div>
+                                        <div class="flex justify-between items-center">
+                                            <span>Project Complexity</span>
+                                            <span class="px-3 py-1 rounded-full text-sm font-medium"
+                                                  :class="getImplementationComplexity() <= 1.0 ? 'bg-green-100 text-green-800' : 
+                                                         getImplementationComplexity() <= 1.5 ? 'bg-yellow-100 text-yellow-800' : 
+                                                         getImplementationComplexity() <= 2.0 ? 'bg-orange-100 text-orange-800' : 
+                                                         'bg-red-100 text-red-800'"
+                                                  x-text="getImplementationComplexity() <= 1.0 ? 'Simple' : 
+                                                         getImplementationComplexity() <= 1.5 ? 'Medium' : 
+                                                         getImplementationComplexity() <= 2.0 ? 'Complex' : 
+                                                         'Very Complex'">
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Use Cases Section -->
             <div x-show="activeSection === 'usecases'" class="space-y-8">
                 <div class="text-center mb-8">
@@ -1507,6 +1814,7 @@
                     features: { name: 'Features', icon: '🔍' },
                     ai: { name: 'AI & Copilot', icon: '🤖' },
                     mining: { name: 'Task vs Process Mining', icon: '⛏️' },
+                    automation: { name: 'Task Automation', icon: '🔧' },
                     security: { name: 'Security & Compliance', icon: '🛡️' },
                     licensing: { name: 'Licensing & Pricing', icon: '💰' },
                     roa: { name: 'ROA Calculator', icon: '⚡' },
@@ -2351,6 +2659,485 @@
                     };
                     
                     return tools[processType] || tools.custom;
+                },
+
+                // Task Automation properties and data
+                automationFilters: {
+                    department: ''
+                },
+                selectedTasks: [],
+
+                automationDepartments: {
+                    admin: { 
+                        name: 'Admin & HR', 
+                        icon: '💼', 
+                        color: '#0078D4',
+                        description: 'Employee management and administrative workflows'
+                    },
+                    finance: { 
+                        name: 'Finance & Procurement', 
+                        icon: '🧾', 
+                        color: '#107C10',
+                        description: 'Financial processes and vendor management'
+                    },
+                    it: { 
+                        name: 'IT & Helpdesk', 
+                        icon: '🧑‍💻', 
+                        color: '#8661C5',
+                        description: 'Technical support and infrastructure management'
+                    },
+                    marketing: { 
+                        name: 'Marketing & Sales', 
+                        icon: '📣', 
+                        color: '#D13438',
+                        description: 'Customer engagement and revenue operations'
+                    },
+                    operations: { 
+                        name: 'Project & Operations', 
+                        icon: '🛠️', 
+                        color: '#FF8C00',
+                        description: 'Project management and operational workflows'
+                    }
+                },
+
+                automationTasks: {
+                    admin: [
+                        {
+                            id: 'admin_1',
+                            manual: 'Sending follow-up or reminder emails',
+                            automated: 'Scheduled or conditional reminder flows',
+                            tools: ['Power Automate', 'Outlook'],
+                            benefits: ['Saves time', 'Ensures consistency', 'Never miss follow-ups'],
+                            steps: ['Create automated flow', 'Set conditions', 'Deploy and monitor']
+                        },
+                        {
+                            id: 'admin_2',
+                            manual: 'Collecting employee or client feedback via email',
+                            automated: 'Online form with automated collection',
+                            tools: ['Microsoft Forms', 'Power Automate'],
+                            benefits: ['Streamlined data capture', 'Real-time responses', 'Automated analysis'],
+                            steps: ['Design feedback form', 'Set up collection flow', 'Create reporting dashboard']
+                        },
+                        {
+                            id: 'admin_3',
+                            manual: 'Entering form data into Excel manually',
+                            automated: 'Auto-saving form responses to Excel or Dataverse',
+                            tools: ['Power Automate', 'Microsoft Forms', 'Excel'],
+                            benefits: ['Reduces errors', 'Saves time', 'Real-time data updates'],
+                            steps: ['Connect forms to database', 'Map data fields', 'Test automation']
+                        },
+                        {
+                            id: 'admin_4',
+                            manual: 'Employee onboarding tasks',
+                            automated: 'Automated onboarding templates',
+                            tools: ['Power Automate', 'Power Apps', 'Teams'],
+                            benefits: ['Ensures consistency', 'Saves time', 'Better employee experience'],
+                            steps: ['Design onboarding workflow', 'Create task templates', 'Integrate with HR systems']
+                        }
+                    ],
+                    finance: [
+                        {
+                            id: 'finance_1',
+                            manual: 'Getting approvals via email threads',
+                            automated: 'Automated multi-level approval workflows',
+                            tools: ['Power Automate', 'Teams', 'SharePoint'],
+                            benefits: ['Tracks status', 'Escalates when needed', 'Audit trail'],
+                            steps: ['Define approval hierarchy', 'Create approval flow', 'Set up notifications']
+                        },
+                        {
+                            id: 'finance_2',
+                            manual: 'Emailing invoices manually',
+                            automated: 'Auto-generation and email of invoices',
+                            tools: ['Power Automate', 'Excel', 'AI Builder'],
+                            benefits: ['Faster delivery', 'Standardized format', 'Reduced errors'],
+                            steps: ['Create invoice template', 'Set up generation flow', 'Automate delivery']
+                        },
+                        {
+                            id: 'finance_3',
+                            manual: 'Manual invoice processing',
+                            automated: 'AI-powered invoice data extraction',
+                            tools: ['AI Builder', 'Power Automate', 'Power BI'],
+                            benefits: ['85% time savings', '90% accuracy', 'Faster approvals'],
+                            steps: ['Train AI model', 'Create processing flow', 'Set up reporting']
+                        },
+                        {
+                            id: 'finance_4',
+                            manual: 'Budget tracking in spreadsheets',
+                            automated: 'Real-time budget dashboards',
+                            tools: ['Power BI', 'Excel', 'Power Automate'],
+                            benefits: ['Real-time insights', 'Automated alerts', 'Better decisions'],
+                            steps: ['Connect data sources', 'Create dashboard', 'Set up alerts']
+                        }
+                    ],
+                    it: [
+                        {
+                            id: 'it_1',
+                            manual: 'Responding to repetitive customer questions',
+                            automated: 'FAQ bots or AI chatbots',
+                            tools: ['Copilot Studio', 'Power Virtual Agents'],
+                            benefits: ['Saves support team time', '24/7 availability', 'Consistent responses'],
+                            steps: ['Create knowledge base', 'Train chatbot', 'Deploy to channels']
+                        },
+                        {
+                            id: 'it_2',
+                            manual: 'Requesting access to systems/documents',
+                            automated: 'Self-service access request with approval flow',
+                            tools: ['Power Automate', 'SharePoint', 'Power Apps'],
+                            benefits: ['Controlled access', 'Auditable trail', 'Faster provisioning'],
+                            steps: ['Create request form', 'Set up approval flow', 'Integrate with AD']
+                        },
+                        {
+                            id: 'it_3',
+                            manual: 'Manual ticket logging',
+                            automated: 'Automated ticket creation and routing',
+                            tools: ['Power Apps', 'Power Automate', 'Teams'],
+                            benefits: ['Faster response', 'Better tracking', 'SLA compliance'],
+                            steps: ['Create ticket form', 'Set up routing rules', 'Integrate systems']
+                        },
+                        {
+                            id: 'it_4',
+                            manual: 'Moving data between systems manually',
+                            automated: 'Scheduled or triggered integration flows',
+                            tools: ['Power Automate', 'Logic Apps', 'Azure'],
+                            benefits: ['Ensures accuracy', 'Reduces workload', 'Real-time sync'],
+                            steps: ['Map data flows', 'Create integration', 'Schedule updates']
+                        }
+                    ],
+                    marketing: [
+                        {
+                            id: 'marketing_1',
+                            manual: 'Tracking project tasks in Excel',
+                            automated: 'Digital Kanban board with task notifications',
+                            tools: ['Microsoft Planner', 'Power Automate', 'Teams'],
+                            benefits: ['Visual management', 'Real-time updates', 'Better collaboration'],
+                            steps: ['Set up project boards', 'Create notification rules', 'Train team']
+                        },
+                        {
+                            id: 'marketing_2',
+                            manual: 'Distributing announcements manually',
+                            automated: 'Auto-post to Teams or email groups',
+                            tools: ['Power Automate', 'Outlook', 'Teams'],
+                            benefits: ['Consistent communication', 'Saves time', 'Better reach'],
+                            steps: ['Create distribution lists', 'Set up posting flow', 'Schedule delivery']
+                        },
+                        {
+                            id: 'marketing_3',
+                            manual: 'Lead capture and follow-up',
+                            automated: 'Automated lead processing and nurturing',
+                            tools: ['Microsoft Forms', 'Power Automate', 'Power BI'],
+                            benefits: ['Faster response', 'Never miss leads', 'Better conversion'],
+                            steps: ['Create lead forms', 'Set up nurturing flow', 'Track performance']
+                        },
+                        {
+                            id: 'marketing_4',
+                            manual: 'Campaign performance tracking',
+                            automated: 'Real-time marketing dashboards',
+                            tools: ['Power BI', 'Power Automate', 'Excel'],
+                            benefits: ['Real-time insights', 'Better optimization', 'ROI tracking'],
+                            steps: ['Connect data sources', 'Create dashboards', 'Set up alerts']
+                        }
+                    ],
+                    operations: [
+                        {
+                            id: 'operations_1',
+                            manual: 'Generating weekly status reports',
+                            automated: 'Auto-generated dashboards and summaries',
+                            tools: ['Power BI', 'Excel', 'Power Query'],
+                            benefits: ['Real-time insights', 'Reduced manual work', 'Consistent format'],
+                            steps: ['Connect data sources', 'Create templates', 'Schedule delivery']
+                        },
+                        {
+                            id: 'operations_2',
+                            manual: 'Scheduling meetings manually',
+                            automated: 'Online booking and availability sync',
+                            tools: ['Microsoft Bookings', 'Outlook', 'Power Automate'],
+                            benefits: ['Less back-and-forth', 'Better scheduling', 'Automated reminders'],
+                            steps: ['Set up booking page', 'Configure availability', 'Enable notifications']
+                        },
+                        {
+                            id: 'operations_3',
+                            manual: 'Manual workflow approvals',
+                            automated: 'Structured approval flows',
+                            tools: ['Power Automate', 'SharePoint', 'Teams'],
+                            benefits: ['Reduces bottlenecks', 'Clear visibility', 'Faster processing'],
+                            steps: ['Map approval process', 'Create workflow', 'Set up escalations']
+                        },
+                        {
+                            id: 'operations_4',
+                            manual: 'Reporting issues via email',
+                            automated: 'Form or app to submit issues',
+                            tools: ['Power Apps', 'SharePoint', 'Power BI'],
+                            benefits: ['Tracks and manages issues', 'Better visibility', 'Faster resolution'],
+                            steps: ['Create issue form', 'Set up tracking', 'Build dashboard']
+                        }
+                    ]
+                },
+
+                getFilteredAutomationTasks() {
+                    if (this.automationFilters.department) {
+                        return { [this.automationFilters.department]: this.automationTasks[this.automationFilters.department] };
+                    }
+                    return this.automationTasks;
+                },
+
+                selectAllVisibleTasks() {
+                    const filteredTasks = this.getFilteredAutomationTasks();
+                    const allTaskIds = [];
+                    
+                    Object.values(filteredTasks).forEach(taskList => {
+                        taskList.forEach(task => {
+                            if (!this.selectedTasks.includes(task.id)) {
+                                allTaskIds.push(task.id);
+                            }
+                        });
+                    });
+                    
+                    this.selectedTasks = [...this.selectedTasks, ...allTaskIds];
+                },
+
+                getTaskById(taskId) {
+                    for (const department in this.automationTasks) {
+                        const task = this.automationTasks[department].find(t => t.id === taskId);
+                        if (task) return task;
+                    }
+                    return null;
+                },
+
+                getUniqueTools() {
+                    const tools = new Set();
+                    this.selectedTasks.forEach(taskId => {
+                        const task = this.getTaskById(taskId);
+                        if (task) {
+                            task.tools.forEach(tool => tools.add(tool));
+                        }
+                    });
+                    return Array.from(tools);
+                },
+
+                getToolIcon(tool) {
+                    const icons = {
+                        'Power Apps': '📱',
+                        'Power Automate': '⚡',
+                        'Power BI': '📊',
+                        'Microsoft Forms': '📝',
+                        'SharePoint': '🗂️',
+                        'Teams': '👥',
+                        'Outlook': '📧',
+                        'Excel': '📈',
+                        'AI Builder': '🧠',
+                        'Copilot Studio': '🤖',
+                        'Power Virtual Agents': '🤖',
+                        'Microsoft Planner': '📋',
+                        'Microsoft Bookings': '📅',
+                        'Azure DevOps': '🔧',
+                        'Logic Apps': '⚙️',
+                        'Azure': '☁️'
+                    };
+                    return icons[tool] || '🛠️';
+                },
+
+                getToolDescription(tool) {
+                    const descriptions = {
+                        'Power Apps': 'Low-code app development platform',
+                        'Power Automate': 'Workflow automation and RPA',
+                        'Power BI': 'Business intelligence and analytics',
+                        'Microsoft Forms': 'Survey and form builder',
+                        'SharePoint': 'Document management and collaboration',
+                        'Teams': 'Chat, meetings, and collaboration',
+                        'Outlook': 'Email and calendar management',
+                        'Excel': 'Spreadsheet and data analysis',
+                        'AI Builder': 'AI capabilities for automation',
+                        'Copilot Studio': 'Conversational AI platform',
+                        'Power Virtual Agents': 'Chatbot development',
+                        'Microsoft Planner': 'Task and project management',
+                        'Microsoft Bookings': 'Appointment scheduling',
+                        'Azure DevOps': 'Development and deployment',
+                        'Logic Apps': 'Enterprise integration',
+                        'Azure': 'Cloud computing platform'
+                    };
+                    return descriptions[tool] || 'Microsoft productivity tool';
+                },
+
+                getPhaseOneTasks() {
+                    // Quick wins that can be implemented in first 2 weeks
+                    const quickTasks = this.selectedTasks.slice(0, 3).map(taskId => {
+                        const task = this.getTaskById(taskId);
+                        return task ? task.manual.substring(0, 30) + '...' : '';
+                    }).filter(Boolean);
+                    
+                    if (quickTasks.length === 0) {
+                        return ['Forms automation', 'Email workflows', 'Basic approvals'];
+                    }
+                    return quickTasks;
+                },
+
+                getPhaseTwoTasks() {
+                    // Medium complexity tasks for weeks 3-6
+                    const mediumTasks = this.selectedTasks.slice(3, 6).map(taskId => {
+                        const task = this.getTaskById(taskId);
+                        return task ? task.manual.substring(0, 30) + '...' : '';
+                    }).filter(Boolean);
+                    
+                    if (mediumTasks.length === 0) {
+                        return ['Custom apps', 'Advanced workflows', 'Integration flows'];
+                    }
+                    return mediumTasks;
+                },
+
+                getPhaseThreeTasks() {
+                    // Complex tasks for weeks 7-12
+                    const complexTasks = this.selectedTasks.slice(6, 9).map(taskId => {
+                        const task = this.getTaskById(taskId);
+                        return task ? task.manual.substring(0, 30) + '...' : '';
+                    }).filter(Boolean);
+                    
+                    if (complexTasks.length === 0) {
+                        return ['AI implementation', 'Process mining', 'Advanced analytics'];
+                    }
+                    return complexTasks;
+                },
+
+                calculateImplementationCost() {
+                    const toolCounts = {};
+                    const licensedTools = new Set();
+                    
+                    this.selectedTasks.forEach(taskId => {
+                        const task = this.getTaskById(taskId);
+                        if (task) {
+                            task.tools.forEach(tool => {
+                                toolCounts[tool] = (toolCounts[tool] || 0) + 1;
+                                // Add tools that require licensing
+                                if (['Power Apps', 'Power Automate', 'Power BI', 'AI Builder', 'Copilot Studio', 'Azure DevOps', 'Logic Apps', 'Azure'].includes(tool)) {
+                                    licensedTools.add(tool);
+                                }
+                            });
+                        }
+                    });
+
+                    const toolPricing = {
+                        'Power Apps': { cost: 20, description: 'Power Apps Premium (per user/month)' },
+                        'Power Automate': { cost: 15, description: 'Power Automate Premium (per user/month)' },
+                        'Power BI': { cost: 10, description: 'Power BI Pro (per user/month)' },
+                        'AI Builder': { cost: 500, description: 'AI Builder Credits (1M credits/month)' },
+                        'Copilot Studio': { cost: 200, description: 'Copilot Studio (10k sessions/month)' },
+                        'Microsoft Bookings': { cost: 25, description: 'Microsoft Bookings SMS + Premium Features (per month)' },
+                        'Azure DevOps': { cost: 6, description: 'Azure DevOps Basic (per user/month)' },
+                        'Logic Apps': { cost: 100, description: 'Logic Apps Consumption (per month)' },
+                        'Azure': { cost: 50, description: 'Azure Services (estimated/month)' }
+                    };
+
+                    let totalMonthlyCost = 0;
+                    const licenseBreakdown = [];
+
+                    licensedTools.forEach(tool => {
+                        if (toolPricing[tool]) {
+                            const toolCost = toolPricing[tool].cost;
+                            totalMonthlyCost += toolCost;
+                            licenseBreakdown.push({
+                                tool: tool,
+                                cost: toolCost,
+                                description: toolPricing[tool].description,
+                                usage: toolCounts[tool] || 1
+                            });
+                        }
+                    });
+
+                    // Calculate implementation hours based on task complexity
+                    const baseHoursPerTask = 8; // 8 hours per basic task
+                    const complexityMultiplier = this.getImplementationComplexity();
+                    const totalImplementationHours = this.selectedTasks.length * baseHoursPerTask * complexityMultiplier;
+                    
+                    // Calculate testing and innovation hours
+                    const testingHours = Math.ceil(totalImplementationHours * 0.3); // 30% for testing
+                    const innovationHours = Math.ceil(totalImplementationHours * 0.2); // 20% for innovation/optimization
+
+                    return {
+                        monthly: totalMonthlyCost,
+                        licenseBreakdown: licenseBreakdown,
+                        implementationHours: totalImplementationHours,
+                        testingHours: testingHours,
+                        innovationHours: innovationHours,
+                        totalProjectHours: totalImplementationHours + testingHours + innovationHours
+                    };
+                },
+
+                getImplementationComplexity() {
+                    const uniqueTools = this.getUniqueTools();
+                    const toolCount = uniqueTools.length;
+                    const taskCount = this.selectedTasks.length;
+                    
+                    // Complexity based on number of tools and tasks
+                    if (toolCount <= 2 && taskCount <= 3) return 1.0; // Simple
+                    if (toolCount <= 4 && taskCount <= 6) return 1.5; // Medium
+                    if (toolCount <= 6 && taskCount <= 10) return 2.0; // Complex
+                    return 2.5; // Very Complex
+                },
+
+                getProjectManagementPhases() {
+                    const totalHours = this.calculateImplementationCost().totalProjectHours;
+                    
+                    return {
+                        discovery: {
+                            name: 'Discovery & Planning',
+                            icon: '🔍',
+                            hours: Math.ceil(totalHours * 0.15),
+                            activities: [
+                                'Stakeholder interviews and requirements gathering',
+                                'Current process documentation and gap analysis',
+                                'Technical architecture planning',
+                                'Risk assessment and mitigation strategies',
+                                'Project charter and resource allocation'
+                            ]
+                        },
+                        foundation: {
+                            name: 'Foundation & Setup',
+                            icon: '🏗️',
+                            hours: Math.ceil(totalHours * 0.25),
+                            activities: [
+                                'Environment setup and security configuration',
+                                'License provisioning and user access',
+                                'Data sources and connector configuration',
+                                'Core Power Platform infrastructure',
+                                'Development standards and governance setup'
+                            ]
+                        },
+                        development: {
+                            name: 'Development & Integration',
+                            icon: '⚡',
+                            hours: Math.ceil(totalHours * 0.35),
+                            activities: [
+                                'Power Apps development and customization',
+                                'Power Automate workflow creation',
+                                'Power BI dashboard and report development',
+                                'AI Builder model training and integration',
+                                'Cross-platform integration and testing'
+                            ]
+                        },
+                        testing: {
+                            name: 'Testing & Quality Assurance',
+                            icon: '🧪',
+                            hours: Math.ceil(totalHours * 0.15),
+                            activities: [
+                                'Unit testing and integration testing',
+                                'User acceptance testing (UAT)',
+                                'Performance and load testing',
+                                'Security and compliance validation',
+                                'Bug fixes and optimization'
+                            ]
+                        },
+                        deployment: {
+                            name: 'Deployment & Go-Live',
+                            icon: '🚀',
+                            hours: Math.ceil(totalHours * 0.10),
+                            activities: [
+                                'Production deployment and monitoring',
+                                'User training and change management',
+                                'Go-live support and issue resolution',
+                                'Knowledge transfer and documentation',
+                                'Success metrics and KPI establishment'
+                            ]
+                        }
+                    };
                 },
 
                 exportReport() {
